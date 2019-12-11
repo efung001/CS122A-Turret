@@ -53,13 +53,13 @@ void x_direction(){
 			sprintf(buffer, "X=%d        Wait", xx);
 			//LCD_DisplayString(1,buffer);
 		//LCD_WriteData(x);
-		if(xx > 560 || (GetBit(PINC,1) == 1)){
+		if(xx > 560 || GetBit(PIND,1) == 1){
 			//set_PWM(20);
 			//speed(xx);
 			x_state = right;
 			command = 0x00;
 		}
-		else if( xx < 535 || (GetBit(PINC,2) == 1)){
+		else if( xx < 535 ||  GetBit(PIND,2) == 1){
 			//set_PWM(100);
 			//speed(xx);
 			x_state = left;
@@ -74,13 +74,13 @@ void x_direction(){
 		xx = ReadADC(0);
 		sprintf(buffer, "X=%d      Left", xx);
 	//	LCD_DisplayString(1,buffer);
-		if(xx > 560){
+		if(xx > 560||  GetBit(PIND,1) == 1){
 			//speed(xx);
 			//set_PWM(20);
 			x_state = right;
 			command = 0x00;
 		}
-		else if( xx < 535){
+		else if( xx < 535||  GetBit(PIND,2) == 1){
 			//speed(xx);
 			//set_PWM(100);
 			x_state = left;
@@ -96,13 +96,13 @@ void x_direction(){
 		xx = ReadADC(0);
 		sprintf(buffer, "X=%d      Right", xx);
 		//LCD_DisplayString(1,buffer);
-		if(xx > 560){
+		if(xx > 560||  (GetBit(PIND,1) == 1)){
 			//set_PWM(20);
 			//speed(xx);
 			//x_state = right;
 			command = 0x00;
 		}
-		else if( xx < 535){
+		else if( xx < 535||  (GetBit(PIND,2) == 1)){
 			//set_PWM(100);
 			//speed(xx);
 			x_state = left;
@@ -155,7 +155,7 @@ void speed(unsigned short x){
 char buffer1[10];
 int main(void)
 {
-	DDRD = 0xFF; PORTD = 0x00;
+	DDRD = 0xC0; PORTD = 0x3F;
 	//DDRA = 0xFF; PORTA = 0x00;
 	DDRA = 0xF0; PORTA = 0x0F;
 	DDRB = 0xFF; PORTB = 0x00;
@@ -163,22 +163,36 @@ int main(void)
 	ADC_init();
 	TimerSet(100);
 	TimerOn();
-	initUSART(0);
+	//initUSRT(0);
 	set_PWM(30);
 	PWM_on();
 	
     while (1) 
     {
-		if(USART_HasReceived(0) == 1){
-			command = USART_Receive(0);
-			USART_Flush(0);
-		}
-		if(GetBit(PINC,7) == 0 || (GetBit(PINC,0) == 1)){								//Works
+		//if(USART_HasReceived(0) == 1){
+			//command = USART_Receive(0);
+			//USART_Flush(0);
+		//}
+		if((GetBit(PINC,7) == 0) || (GetBit(PIND,0) == 1)){								//Works
 			PORTB = SetBit(PORTB,0,1);
 			PORTD = 0x80;
 			delay_ms(50);
 			PORTD= 0x00;
 			command = 0x00;
+		}
+		else if((GetBit(PIND,0) == 1)){
+			PORTC =SetBit(PORTC,0,1);
+			PORTC =SetBit(PORTC,2,1);
+			delay_ms(50);
+			PORTC =SetBit(PORTC,0,0);
+			PORTC =SetBit(PORTC,2,0);
+		}
+		else if((GetBit(PIND,0) == 1)){
+			PORTC =SetBit(PORTC,3,1);
+			PORTC =SetBit(PORTC,1,1);
+			delay_ms(50);
+			PORTC =SetBit(PORTC,3,0);
+			PORTC =SetBit(PORTC,1,0);
 		}
 		else{
 			PORTB = SetBit(PORTB,0,0);
